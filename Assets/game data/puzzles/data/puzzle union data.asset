@@ -1,0 +1,17 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a6422b3329861554685168977d7d3117, type: 3}
+  m_Name: puzzle union data
+  m_EditorClassIdentifier: 
+  Id: Union
+  UiPrefab: {fileID: 211220827756424841, guid: 83fee6ce591eb564e8fa868f8c68bc7a, type: 3}
+  Prefab: {fileID: 7005063758647849889, guid: 90acce02234148940ac0481ba010d42a, type: 3}

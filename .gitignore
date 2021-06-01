@@ -1,0 +1,20 @@
+Library
+Temp
+obj
+Logs
+*.sln
+*.csproj
+*.unityproj
+*.userprefs
+*.fbm
+*.fbm.meta
+*.swatches
+*.swatch
+*.mayaSwatches
+.vscode
+.vs
+.idea
+
+#custom platform info, don’t need to be committed 
+Assets/Plugins/Editor/JetBrains
+JetBrains.meta
