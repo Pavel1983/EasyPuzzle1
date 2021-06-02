@@ -14,6 +14,8 @@ namespace PuzzleGame
 
 		public void FillTab(string[] puzzleIds)
 		{
+			ClearTab();
+			
 			for (int i = 0; i < puzzleIds.Length; ++i)
 			{
 				string id = puzzleIds[i];
@@ -62,6 +64,16 @@ namespace PuzzleGame
 				return puzzleObject;
 
 			return null;
+		}
+
+		private void ClearTab()
+		{
+			foreach (var element in _elements)
+			{
+				Destroy(element.Value.gameObject);
+			}
+			
+			_elements.Clear();
 		}
 
 		private void Refresh()

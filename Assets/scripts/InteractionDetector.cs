@@ -9,13 +9,15 @@ namespace PuzzleGame.UI
 		IDragHandler, 
 		IEndDragHandler,
 		IPointerDownHandler,
-		IPointerUpHandler
+		IPointerUpHandler,
+		IPointerClickHandler
 	{
 		public event Action<InteractionDetector> EventBeginDrag;
 		public event Action<InteractionDetector> EventDrag;
 		public event Action<InteractionDetector> EventEndDrag;
 		public event Action<InteractionDetector> EventPointerDown;
 		public event Action<InteractionDetector> EventPointerUp;
+		public event Action<InteractionDetector> EventPointerClick;
 		
 		public void OnBeginDrag(PointerEventData eventData)
 		{
@@ -40,6 +42,11 @@ namespace PuzzleGame.UI
 		public void OnPointerUp(PointerEventData eventData)
 		{
 			EventPointerUp?.Invoke(this);
+		}
+
+		public void OnPointerClick(PointerEventData eventData)
+		{
+			EventPointerClick?.Invoke(this);
 		}
 	}
 }

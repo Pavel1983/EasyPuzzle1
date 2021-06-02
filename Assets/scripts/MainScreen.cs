@@ -1,43 +1,49 @@
 ﻿using UnityEngine;
 using UnityEngine.Assertions;
+using UnityEngine.UI;
 
 namespace PuzzleGame.UI
 {
-	public class MainScreen : MonoBehaviour, IScreen
+	public class MainScreen : BaseScreen
 	{
+		[SerializeField] private Button _backButton;
 		[SerializeField] private float _puzzleHoldTimeBeforeDrag = 0.3f;
 		[SerializeField] private PuzzlesData _puzzlesData;
 		[SerializeField] private PuzzlesTab _puzzlesTab;
+		[SerializeField] private GameData _gameData;
 
+		// locals
 		private float _puzzleHoldTime = 0;
 		private bool _puzzlePressed;
 		private string _currentPuzzleId;
 		private Level _level;
 		private Camera _mainCamera;
+		private int _curLevel = 0;
 
 		#region life cycle
+		private void OnEnable()
+		{
+			_backButton.onClick.AddListener(OnBackButton);
+
+			if (_level == null)
+			{
+				TryLoadLevelFromPrefs();
+				LoadLevel();
+			}
+		}
+
+		private void OnDisable()
+		{
+			_backButton.onClick.RemoveListener(OnBackButton);
+			if (_level != null)
+			{
+				Destroy(_level.gameObject);
+			}
+		}
+
 		private void Start()
 		{
-			_level = FindObjectOfType<Level>();
-			Assert.IsTrue(_level != null);
-
-			if (_level.Load())
-			{
-				_level.EventReturnPuzzleBack += OnPuzzleBack;
-				
-				var puzzleCollection = _level.GetPuzzleCollection();
-				_puzzlesTab.FillTab(puzzleCollection);
-
-				var puzzleObjects = _puzzlesTab.GetAllPuzzleObjectFromTab();
-				for (int i = 0; i < puzzleObjects.Count; ++i)
-				{
-					var interactionDetector = puzzleObjects[i].GetComponent<InteractionDetector>();
-					interactionDetector.EventPointerDown += OnPuzzleHold;
-					interactionDetector.EventPointerUp += OnPuzzleRelease;
-				}
-				
-				_mainCamera = Camera.main;
-			}		
+			//TryLoadLevelFromPrefs();
 		}
 
 		private void Update()
@@ -56,22 +62,13 @@ namespace PuzzleGame.UI
 			}
 		}
 		#endregion
-		
-		#region IScreen impl
-		public string Id { get; }
-
-		public void Show()
-		{
-			gameObject.SetActive(true);
-		}
-
-		public void Hide()
-		{
-			gameObject.SetActive(false);
-		}
-		#endregion
 
 		#region event handlers
+		
+		private void OnBackButton()
+		{
+			UI.Instance.Back();
+		}
 		
 		private void OnPuzzleRelease(InteractionDetector detector)
 		{
@@ -100,7 +97,50 @@ namespace PuzzleGame.UI
 		}
 		
 		#endregion
-		
+
+		private void LoadLevel()
+		{
+			if (_level.Load())
+			{
+				_level.EventReturnPuzzleBack += OnPuzzleBack;
+				
+				var puzzleCollection = _level.GetPuzzleCollection();
+				_puzzlesTab.FillTab(puzzleCollection);
+
+				var puzzleObjects = _puzzlesTab.GetAllPuzzleObjectFromTab();
+				for (int i = 0; i < puzzleObjects.Count; ++i)
+				{
+					var interactionDetector = puzzleObjects[i].GetComponent<InteractionDetector>();
+					interactionDetector.EventPointerDown += OnPuzzleHold;
+					interactionDetector.EventPointerUp += OnPuzzleRelease;
+				}
+				
+				_mainCamera = Camera.main;
+			}		
+		}
+
+		private void TryLoadLevelFromPrefs()
+		{
+			_curLevel = PlayerPrefs.GetInt(GameConstants.PrefsLevel, 0);
+
+			Assert.IsTrue(_gameData.LevelData.Count > 0);
+
+			Level levelPrefab = null;
+			if (_gameData.LevelData.Count < _curLevel)
+			{
+				levelPrefab = _gameData.LevelData[_curLevel].LevelPrefab;
+			}
+			else
+			{
+				PlayerPrefs.SetInt(GameConstants.PrefsLevel, 0);
+				_curLevel = 0;
+				
+				levelPrefab = _gameData.LevelData[_curLevel].LevelPrefab;
+			}
+
+			_level = Instantiate(levelPrefab);
+		}
+
 		private void SelectPuzzle(string puzzleId)
 		{
 			_puzzlesTab.RemoveElement(puzzleId);

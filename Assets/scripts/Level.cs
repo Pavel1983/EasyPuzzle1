@@ -5,10 +5,16 @@ using UnityEngine;
 
 namespace PuzzleGame
 {
+    [Serializable]
     public struct PuzzleRec
     {
         public bool Filled;
+        [NonSerialized]
         public PuzzleElementDataHolder SceneObject;
+    }
+
+    public class PuzzleId2PuzzleRecDict : SerializableDictionary<string, PuzzleRec>
+    {
     }
 
     public class Level : MonoBehaviour
@@ -24,13 +30,14 @@ namespace PuzzleGame
         private string _currentConrolledPuzzleId;
         private Camera _mainCamera;
 
-        private Dictionary<string, PuzzleRec> _completeness = new Dictionary<string, PuzzleRec>();
+        private PuzzleId2PuzzleRecDict _completeness = new PuzzleId2PuzzleRecDict();
 
         #region life cycle
 
         private void Awake()
         {
             _mainCamera = Camera.main;
+            RestoreCompleteness();
         }
 
         private void Update()
@@ -48,32 +55,39 @@ namespace PuzzleGame
             }
         }
 
+        private void OnDestroy()
+        {
+            SaveCompleteness();
+        }
+
         #endregion
         public bool Load()
         {
             var puzzles = GetComponentsInChildren<PuzzleElementDataHolder>();
             _puzzleTransforms = puzzles.Select(p => p.transform).ToArray();
-            
+            _puzzleIds = puzzles.Select(item => item.Id).ToArray();
+
+            if (_completeness.Count == 0)
+            {
+                for (int i = 0; i < _puzzleIds.Length; ++i)
+                {
+                    PuzzleRec rec = new PuzzleRec();
+                    rec.Filled = false;
+                    rec.SceneObject = puzzles[i];
+
+                    _completeness.Add(_puzzleIds[i], rec);
+                }
+            }
+
             // hack 
             for (int i = 0; i < puzzles.Length; ++i)
             {
                 var sr = puzzles[i].GetComponent<SpriteRenderer>();
                 Color color = sr.color;
-                color.a = 0.2f;
+                color.a = _completeness[puzzles[i].Id].Filled ? 1.0f : 0.2f;
                 sr.color = color;
             }
             // end hack
-
-            _puzzleIds = puzzles.Select(item => item.Id).ToArray();
-
-            for (int i = 0; i < _puzzleIds.Length; ++i)
-            {
-                PuzzleRec rec = new PuzzleRec();
-                rec.Filled = false;
-                rec.SceneObject = puzzles[i];
-                
-                _completeness.Add(_puzzleIds[i], rec);
-            }
 
             return true;
         }
@@ -100,8 +114,6 @@ namespace PuzzleGame
             
             if (inMagnetArea)
             {
-                // анимимируем попадание
-                Debug.Log($"{_currentControlledPuzzle.gameObject.name} destroyed. New element filled");
                 Destroy(_currentControlledPuzzle.gameObject);
 
                 FillPuzzle(_currentConrolledPuzzleId);
@@ -121,6 +133,22 @@ namespace PuzzleGame
             _currentControlledPuzzle = null;
         }
         #endregion
+
+        private void SaveCompleteness()
+        {
+            int curLevel = PlayerPrefs.GetInt(GameConstants.PrefsLevel, 0);
+            PlayerPrefs.SetString($"level{curLevel}", JsonUtility.ToJson(_completeness));
+        }
+
+        private void RestoreCompleteness()
+        {
+            int curLevel = PlayerPrefs.GetInt(GameConstants.PrefsLevel, 0);
+            if (PlayerPrefs.HasKey($"level{curLevel}"))
+            {
+                string jsonString = PlayerPrefs.GetString($"level{curLevel}");
+                _completeness = JsonUtility.FromJson<PuzzleId2PuzzleRecDict>(jsonString);
+            }
+        }
 
         private bool InMagnetArea(string puzzleId, Vector3 pos, float magneticRange, out GameObject magnetObject)
         {
