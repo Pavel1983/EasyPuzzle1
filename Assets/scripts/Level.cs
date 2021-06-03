@@ -81,12 +81,12 @@ namespace PuzzleGame
             }
             else
             {
-                foreach (var puzzleObjectRec in _completeness)
+                foreach (var puzzleId in _completeness.Keys.ToList())
                 {
-                    string puzzleId = puzzleObjectRec.Key;
+                    //string puzzleId = puzzleObjectRec.Key;
                     var foundPuzzleObject = puzzles.FirstOrDefault(p => p.Id == puzzleId);
                     Assert.IsTrue(foundPuzzleObject != null);
-                    PuzzleRec rec = puzzleObjectRec.Value;
+                    PuzzleRec rec = _completeness[puzzleId];
                     rec.SceneObject = foundPuzzleObject;
                     _completeness[puzzleId] = rec;
                 }
@@ -113,7 +113,7 @@ namespace PuzzleGame
 
         public string[] GetPuzzleCollection()
         {
-            return _puzzleIds;
+            return _completeness.Where(item => !item.Value.Filled).Select(p => p.Key).ToArray();
         }
         
         #region Events
