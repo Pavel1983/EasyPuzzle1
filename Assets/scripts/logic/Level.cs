@@ -1,19 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.Assertions;
 
 namespace PuzzleGame
 {
-    [Serializable]
-    public struct PuzzleRec
-    {
-        public bool Filled;
-        [NonSerialized]
-        public PuzzleElementDataHolder SceneObject;
-    }
-
     public class PuzzleId2PuzzleRecDict : SerializableDictionary<string, PuzzleRec>
     {
     }
@@ -22,15 +13,12 @@ namespace PuzzleGame
     {
         public event Action<string> EventReturnPuzzleBack;
         
-        // временно
         [SerializeField] private float _magneticMinDistance;
         
-        private Transform[] _puzzleTransforms;
         private string[] _puzzleIds;
         private GameObject _currentControlledPuzzle;
         private string _currentConrolledPuzzleId;
         private Camera _mainCamera;
-
         private PuzzleId2PuzzleRecDict _completeness = new PuzzleId2PuzzleRecDict();
 
         #region life cycle
@@ -65,7 +53,6 @@ namespace PuzzleGame
         public bool Load()
         {
             var puzzles = GetComponentsInChildren<PuzzleElementDataHolder>();
-            _puzzleTransforms = puzzles.Select(p => p.transform).ToArray();
             _puzzleIds = puzzles.Select(item => item.Id).ToArray();
 
             if (_completeness.Count == 0)
