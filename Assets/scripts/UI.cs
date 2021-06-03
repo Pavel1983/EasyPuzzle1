@@ -66,6 +66,8 @@ namespace PuzzleGame.UI
 
                     _screens.Pop();
                 }
+                
+                _screens.Peek().Show();
             }
             else
             // 2. Если нет в стеке ищем в кеше

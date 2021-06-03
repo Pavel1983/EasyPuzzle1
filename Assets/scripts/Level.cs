@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.Assertions;
 
 namespace PuzzleGame
 {
@@ -78,6 +79,18 @@ namespace PuzzleGame
                     _completeness.Add(_puzzleIds[i], rec);
                 }
             }
+            else
+            {
+                foreach (var puzzleObjectRec in _completeness)
+                {
+                    string puzzleId = puzzleObjectRec.Key;
+                    var foundPuzzleObject = puzzles.FirstOrDefault(p => p.Id == puzzleId);
+                    Assert.IsTrue(foundPuzzleObject != null);
+                    PuzzleRec rec = puzzleObjectRec.Value;
+                    rec.SceneObject = foundPuzzleObject;
+                    _completeness[puzzleId] = rec;
+                }
+            }
 
             // hack 
             for (int i = 0; i < puzzles.Length; ++i)
@@ -119,7 +132,7 @@ namespace PuzzleGame
                 FillPuzzle(_currentConrolledPuzzleId);
                 if (GameOver())
                 {
-                    Debug.Log("GameOver");
+                    PuzzleGame.UI.UI.Instance.Open(GameConstants.WinScreen);
                 }
             }
             else
